@@ -57,7 +57,7 @@ class Game
         let widthPar = parent.outerWidth();
         let speed = this.options.level_1.speed;
         console.log(/*activeTank.position().left >= parent.offset().left ||*/ activeTank.offset().left  , (parent.offset().left + widthPar));
-        if (activeTank.position().left >= parent.offset().left || activeTank.offset().left <= (parent.offset().left + widthPar)) {
+        if (/*activeTank.position().left >= parent.offset().left ||*/ activeTank.offset().left <= (parent.offset().left + widthPar)) {
             if(keyCode === 37) {
                 this.position  -= speed;
                 activeTank.css(`transform`,`translateX(${this.position}px`);
