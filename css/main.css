@@ -1,0 +1,66 @@
+/*HEADER*/
+header .navLogo {
+    width:50px;
+    height:50px;
+    object-fit: cover;
+}
+/*CONTENT*/
+#content {
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+#content .gameZone {
+    position:relative;
+    height: 320px;
+    border: 1px solid green;
+    margin-right:67px;
+    margin-left:16px;
+}
+
+#content .gameZone .jambotron {
+    padding:0 !important;
+}
+
+#content .gameZone .active {
+    position:absolute;
+    bottom:0;
+    left:41%;
+}
+
+#content .gameZone .active img{
+    width:80px;
+    height:80px;
+}
+
+#content .arsenal  {
+    border:1px solid chocolate;
+}
+
+#content .arsenal .bullet {
+    width:50px;
+    height:20px;
+}
+
+#content .tankPark {
+    width: 98%;
+    height: 122px;
+    border: 1px solid red;
+}
+
+#content .tankPark .tank {
+    display:inline-block;
+    margin-top:10px;
+    margin-right:50px;
+}
+
+#content .tankPark .tank {
+    cursor:pointer;
+}
+
+#content .tankPark .tank img {
+    width:100px;
+    height:100px;
+    object-fit:cover;
+}
+
