@@ -7,7 +7,7 @@ class Game
                 bullets : 30,
                 level_time : 6000,
                 speed    : 15,
-                bulletsTime  : 500
+                bulletsSpeed : 500,
             },
             level_2 : {
                 id : [2,3],
@@ -41,28 +41,40 @@ class Game
         let bullets = option.bullets;
 
         for (let i = 0; i < bullets; i++) {
-            let bullet = `<img src="images/bullets/bullet.jpg" class="d- bullet" alt="bullet" data-img="${i + 1}">`;
+            let bullet = `<img src="images/bullet.png" class="bullet" alt="bullet" data-img="${i + 1}">`;
             $(`.arsenal`).append(bullet);
         }
     }
 
     shoot () {
-
+        let positionBullet = 0;
+        let bullet = $(`.bullet`);
+        let lastBullet = bullet.eq(bullet.length - 1);
+        let activeBullet = lastBullet.clone();
+        activeBullet.addClass(`activeBull`);
+        $(`.gameZone`).append(activeBullet);
+        lastBullet.remove();
+        // for (let i = 0; i < 124 ; i++) {
+        //     activeBullet.css(`transform`,[`translateY(${-(i += 10)}px) rotate(90deg)`]);
+        // }
+        // setInterval(function () {
+        //     console.log(positionBullet += 10);
+        //     activeBullet.css(`transform`,[`translateY(${-(positionBullet += 10)}px) rotate(90deg)`]);
+        // },1200);
 
     }
 
     move (keyCode) {
         let activeTank  = $(`.active`);
-        let parent = activeTank.parent();
-        let widthPar = parent.outerWidth();
+        let activeTankPosLeft = activeTank.offset().left;
         let speed = this.options.level_1.speed;
-        console.log(/*activeTank.position().left >= parent.offset().left ||*/ activeTank.offset().left  , (parent.offset().left + widthPar));
-        if (/*activeTank.position().left >= parent.offset().left ||*/ activeTank.offset().left <= (parent.offset().left + widthPar)) {
-            if(keyCode === 37) {
+        if(keyCode === 37) {
+            if (this.position > (-270)) {
                 this.position  -= speed;
                 activeTank.css(`transform`,`translateX(${this.position}px`);
             }
-            else if(keyCode === 39) {
+        }else if(keyCode === 39) {
+            if (this.position < 330) {
                 this.position  += speed;
                 activeTank.css(`transform`,`translateX(${this.position}px`);
             }
