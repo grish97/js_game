@@ -39,21 +39,30 @@ header .navLogo {
 }
 #content .gameZone .activeBull {
     position: absolute;
-    top: -35px;
-    right: 11px;
-    height: 40px;
-    width: 36px;
-    transition:0.6s ease;
+    height: 35px;
+    width: 6px;
+    bottom: 87px;
 }
 
+/*#content .gameZone ._target {*/
+    /*position:absolute;*/
+    /*width:31px;*/
+/*}*/
+
+#content .gameZone ._target {
+    position:absolute;
+    width:33px;
+    object-fit:cover;
+    /*transition: 0.003s ease;*/
+}
 
 #content .arsenal  {
     border:1px solid chocolate;
 }
 
 #content .arsenal .bullet {
-    width: 59px;
-    height: 33px;
+    width: 40px;
+    height: 20px;
     object-fit: contain;
     margin-top: 4px;
     margin-right: 19px;
