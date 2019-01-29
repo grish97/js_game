@@ -15,6 +15,13 @@ header .navLogo {
     margin-right: 16px;
 }
 
+#content .score {
+    width:100px;
+    height:100px;
+    border:1px solid greenyellow;
+    font-size:54px;
+}
+
 #content .gameZone {
     position:relative;
     height: 320px;
@@ -23,6 +30,11 @@ header .navLogo {
     margin-left:16px;
     padding:0;
 }
+
+/*#content .gameZone .hiddenBlock {*/
+    /*position:relative;*/
+    /*z-index:2;*/
+/*}*/
 
 #content .gameZone .active {
     position:absolute;
@@ -43,11 +55,6 @@ header .navLogo {
     width: 6px;
     bottom: 87px;
 }
-
-/*#content .gameZone ._target {*/
-    /*position:absolute;*/
-    /*width:31px;*/
-/*}*/
 
 #content .gameZone ._target {
     position:absolute;

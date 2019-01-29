@@ -8,7 +8,8 @@ class Game
                 level_time : 6000,
                 speed    : 15,
                 bulletsSpeed : 5000,
-                targetSpeed : 10
+                targetSpeed : 60,
+                score : 0
             },
             level_2 : {
                 id : [2,3],
@@ -18,27 +19,29 @@ class Game
                 bulletsTime  : 500
             },
         };
-        this.targetIntervals = {};
+        this.targetIntervalId = null;
+        this.targetIntervals = [];
         this.position = 0;
     }
 
     play (option) {
-        this.tankPark();
+        this.tankPark(option.score);
         this.targets(option.targetSpeed);
         this.getTank(option);
     }
 
-
-    tankPark () {
+    tankPark (score) {
         let block =  $(`.tank`);
         for (let i = 0; i < block.length; i++) {
             block.eq(i).attr(`data-id`,(i+1));
         }
+        $(`.gameZone`).before(`<p class="score">${score}</p>`);
     }
 
-    moveTarget(elem) {
+    moveTarget(elem,intervalId) {
         let top = elem.position().top;
-        elem.css('top',(top+0.3)+'px');
+        game.meetingModels({target: elem,targetIntervalId : this.targetIntervals[intervalId]});
+        elem.css('top',(top+1)+'px');
     }
 
 
@@ -47,14 +50,13 @@ class Game
         let intervalId = 0,
             gameZone = $(`.gameZone`),
             time = Math.ceil(Math.random() * 6500);
-        console.log(time);
 
-        setInterval(()=> {
+        this.targetIntervalId = setTimeout(()=> {
             let imgTarget = $(`<img src="images/targets/${Math.ceil(Math.random() * 10)}.png" alt="Target" class="_target" data-intervalId="${intervalId}">`);
             gameZone.prepend(imgTarget);
             imgTarget.css(`left`,`${Math.ceil(Math.random() * 90)}%`);
-            this.targetIntervals['interval-'+intervalId] = setInterval(() => {
-                this.moveTarget(imgTarget)
+            this.targetIntervals[intervalId] = setInterval(() => {
+                this.moveTarget(imgTarget,intervalId)
             },speed);
             intervalId++;
         },time);
@@ -69,8 +71,8 @@ class Game
         block.remove();
         let bullets = option.bullets;
 
-        for (let i = 0; i < bullets; i++) {
-            let bullet = `<img src="images/bullets/bullet.png" class="bullet" alt="bullet" data-img="${i + 1}">`;
+        for (let i = 1; i < bullets; i++) {
+            let bullet = `<img src="images/bullets/bullet.png" class="bullet" alt="bullet" data-img="${i}">`;
             $(`.arsenal`).append(bullet);
         }
     }
@@ -90,13 +92,15 @@ class Game
         let positionBullet = 0;
 
         if (bullet.length) {
-            let activeBullPos = bullet.position().top;
             let interval = setInterval(() => {
-                if(activeBullPos !== -1) {
-                    $(`.activeBull[data-img='${activeBulletId}']`).css(`transform`,`translateY(${-(positionBullet += 10)}px)`);
-                }else $(`.activeBull[data-img='${activeBulletId}']`).remove();
-            },50);
+                let activeBullPos = activeBullet.offset().top;
+                let elem = $(`.activeBull[data-img='${activeBulletId}']`);
+                game.meetingModels({bullet : elem, bulletIntervalId : interval});
+                elem.css(`transform`,`translateY(${-(positionBullet += 10)}px)`);
+            },200);
         }
+
+
     }
 
     move (keyCode) {
@@ -107,12 +111,54 @@ class Game
             if (this.position > (-270)) {
                 this.position  -= speed;
                 activeTank.css(`transform`,`translateX(${this.position}px`);
+
             }
         }else if(keyCode === 39) {
             if (this.position < 330) {
                 this.position  += speed;
                 activeTank.css(`transform`,`translateX(${this.position}px`);
             }
+        }
+    }
+
+    meetingModels (params) {
+        let {bullet,target,bulletIntervalId,targetIntervalId} = params;
+            // GAME ZONE PARAMS
+        let zone = $(`.gameZone`),
+            zoneWidth = zone.outerWidth(),
+            zoneHeight = zone.height(),
+            zonePosTop = zone.position().top,
+            zonePosLeft = zone.offset().left;
+
+        // TANK PARAMETRS
+        let tank = $(`.active`),
+            tankWidth = tank.width(),
+            tankHeight = tank.height(),
+            tankPos = tank.position(),
+            tankPosLeft = Math.round(tankPos.left),
+            tankPosTop = tankPos.top;
+
+        if (bullet && !target) {
+            let bulletPos = bullet.offset(),
+                bulletPosTop = bulletPos.top;
+
+            if (bulletPosTop > zonePosTop -6 && bulletPosTop < zonePosTop +6) {
+                clearInterval(bulletIntervalId);
+                bullet.remove();
+            }
+        }else if(target && !bullet) {
+            let targetHeight = target.height(),
+                targetPos = target.position(),
+                targetPosTop = targetPos.top,
+                targetPosLeft = Math.round(targetPos.left) + target.width();
+
+                if ((targetPosTop +targetHeight) === zoneHeight) {
+                    clearInterval(targetIntervalId);
+                    target.remove();
+                }else if(/*(zoneHeight - (tankHeight + targetHeight) <= targetPosTop) && */(targetPosLeft > tankPosLeft && targetPosLeft < (tankPosLeft + tankWidth))) {
+                    console.log(true);
+                }
+                console.log(targetPosLeft + "NerqinS" + tankPosLeft +"--"+ targetPosLeft +'VerinS'+ (tankPosLeft + tankWidth));
         }
     }
 }
