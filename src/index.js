@@ -19,7 +19,7 @@ class Game
                 bulletsTime  : 500
             },
         };
-        this.targetIntervalId = null;
+        this.addTarget = null;
         this.targetIntervals = [];
         this.position = 0;
     }
@@ -38,25 +38,23 @@ class Game
         $(`.gameZone`).before(`<p class="score">${score}</p>`);
     }
 
-    moveTarget(elem,intervalId) {
+    moveTarget(elem) {
         let top = elem.position().top;
-        game.meetingModels({target: elem,targetIntervalId : this.targetIntervals[intervalId]});
+        this.meetingModels({target: elem});
         elem.css('top',(top+1)+'px');
     }
-
-
 
     targets (speed) {
         let intervalId = 0,
             gameZone = $(`.gameZone`),
-            time = Math.ceil(Math.random() * 6500);
+            time = Math.ceil(Math.random() * 7000);
 
-        this.targetIntervalId = setTimeout(()=> {
-            let imgTarget = $(`<img src="images/targets/${Math.ceil(Math.random() * 10)}.png" alt="Target" class="_target" data-intervalId="${intervalId}">`);
+        this.addTarget = setTimeout(()=> {
+            let imgTarget = $(`<img src="images/targets/${Math.ceil(Math.random() * 5)}.png" alt="Target" class="_target" data-intervalId="${intervalId}">`);
             gameZone.prepend(imgTarget);
-            imgTarget.css(`left`,`${Math.ceil(Math.random() * 90)}%`);
+            imgTarget.css(`left`,`${Math.round(Math.random() * 95)}%`);
             this.targetIntervals[intervalId] = setInterval(() => {
-                this.moveTarget(imgTarget,intervalId)
+                this.moveTarget(imgTarget);
             },speed);
             intervalId++;
         },time);
@@ -122,7 +120,7 @@ class Game
     }
 
     meetingModels (params) {
-        let {bullet,target,bulletIntervalId,targetIntervalId} = params;
+        let {bullet,target,bulletIntervalId} = params;
             // GAME ZONE PARAMS
         let zone = $(`.gameZone`),
             zoneWidth = zone.outerWidth(),
@@ -132,11 +130,13 @@ class Game
 
         // TANK PARAMETRS
         let tank = $(`.active`),
-            tankWidth = tank.width(),
+            tankWidth = tank.outerWidth(),
             tankHeight = tank.height(),
             tankPos = tank.position(),
             tankPosLeft = Math.round(tankPos.left),
             tankPosTop = tankPos.top;
+
+        let bullets = $(`.activeBull`);
 
         if (bullet && !target) {
             let bulletPos = bullet.offset(),
@@ -147,19 +147,35 @@ class Game
                 bullet.remove();
             }
         }else if(target && !bullet) {
-            let targetHeight = target.height(),
+            let targetIntervalId = this.targetIntervals[target.attr(`data-intervalId`)],
+                targetHeight = target.height(),
+                targetWidth  = target.width(),
                 targetPos = target.position(),
                 targetPosTop = targetPos.top,
-                targetPosLeft = Math.round(targetPos.left) + target.width();
+                targetPosLeft = Math.round(targetPos.left);
 
                 if ((targetPosTop +targetHeight) === zoneHeight) {
                     clearInterval(targetIntervalId);
                     target.remove();
-                }else if(/*(zoneHeight - (tankHeight + targetHeight) <= targetPosTop) && */(targetPosLeft > tankPosLeft && targetPosLeft < (tankPosLeft + tankWidth))) {
-                    console.log(true);
+                }else if((zoneHeight - (tankHeight + targetHeight) <= targetPosTop) && ((tankPosLeft <= (targetPosLeft + targetWidth)) && ((targetPosLeft + targetWidth) < (tankPosLeft + tankWidth)))) {
+                    clearInterval(targetIntervalId);
+                    this.gameOver();
+                }else if (bullets && target) {
+                    for (let i = 0; i < bullets.length; i++) {
+                        let bulletWidth = bullets.eq(i).width(),
+                            bulletHeight = bullets.eq(i).height(),
+                            bulletPos = bullets.eq(i).position(),
+                            bulletPosTop = bulletPos.top,
+                            bulletPosLeft = bulletPos.left;
+                        // console.log((targetPosLeft < bulletPosLeft && bulletPosLeft < (targetPosLeft + targetWidth)));
+                        console.log(zoneHeight-targetPosTop,zoneHeight-bulletPosTop);
+                    }
                 }
-                console.log(targetPosLeft + "NerqinS" + tankPosLeft +"--"+ targetPosLeft +'VerinS'+ (tankPosLeft + tankWidth));
         }
+    }
+
+    gameOver () {
+
     }
 }
 
