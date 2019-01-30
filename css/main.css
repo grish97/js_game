@@ -11,30 +11,98 @@ header .navLogo {
 }
 /*CONTENT*/
 #content {
+    position:relative;
     margin-left: 16px;
     margin-right: 16px;
 }
 
+.start:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    z-index: 5;
+    background: url('../images/startImg1.jpg') no-repeat center;
+    background-size:cover;
+}
+
+.end:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    z-index: 5;
+    background: url('../images/game_over.jpg') no-repeat center;
+}
+
+#content  .play {
+    position: relative;
+    z-index:5;
+    padding: 10px 50px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    opacity:0.7;
+    transform: translateY(227px);
+    transition: 0.6s ease;
+}
+#content  .play:hover {
+    opacity:1;
+}
+
+#content .gameOver {
+    position:relative;
+    z-index:5;
+    padding-top:30px;
+}
+
 #content .score {
     width:100px;
-    height:100px;
-    border:1px solid greenyellow;
     font-size:54px;
+}
+
+.victory:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    z-index: 5;
+    background: url('../images/victory.jpg') no-repeat center;
+    background-size:cover;
 }
 
 #content .gameZone {
     position:relative;
+    z-index:3;
     height: 320px;
-    border: 1px solid green;
     margin-right:67px;
     margin-left:16px;
     padding:0;
+    background:url('../images/rock.jpg') no-repeat center;
+    background-size: cover;
 }
 
-/*#content .gameZone .hiddenBlock {*/
-    /*position:relative;*/
-    /*z-index:2;*/
-/*}*/
+#content .gameZone:after {
+    content:'';
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    background:rgba(0,0,0,0.5);
+    z-index:2;
+}
 
 #content .gameZone .active {
     position:absolute;
@@ -64,21 +132,23 @@ header .navLogo {
 }
 
 #content .arsenal  {
-    border:1px solid chocolate;
+    border:10px solid;
+    border-image:url('../images/border_img.jpg') 30;
 }
 
 #content .arsenal .bullet {
-    width: 40px;
+    width: 33px;
     height: 20px;
     object-fit: contain;
     margin-top: 4px;
-    margin-right: 19px;
+    margin-right: 8px;
 }
 
 #content .tankPark {
-    width: 98%;
+    border:10px solid;
+    border-image: url('../images/tankPark.jpg') 30;
+    background-size: cover;
     height: 122px;
-    border: 1px solid red;
 }
 
 #content .tankPark .tank {
