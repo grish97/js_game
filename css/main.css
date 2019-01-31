@@ -14,6 +14,7 @@ header .navLogo {
     position:relative;
     margin-left: 16px;
     margin-right: 16px;
+    user-select:none;
 }
 
 .start:before {
@@ -26,7 +27,7 @@ header .navLogo {
     width: 100%;
     z-index: 5;
     background: url('../images/startImg1.jpg') no-repeat center;
-    background-size:cover;
+    background-size: cover;
 }
 
 .end:before {
@@ -41,6 +42,20 @@ header .navLogo {
     background: url('../images/game_over.jpg') no-repeat center;
 }
 
+.victory:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    z-index: 5;
+    background: linear-gradient(rgba(0, 0, 0, 0.45),rgba(118, 0, 0, 0.45)), url('../images/victory.jpg') no-repeat center;
+    background-size:cover;
+}
+
+
 #content  .play {
     position: relative;
     z-index:5;
@@ -52,34 +67,23 @@ header .navLogo {
     outline: none;
     opacity:0.7;
     transform: translateY(227px);
-    transition: 0.6s ease;
+    transition: 0.3s ease;
 }
 #content  .play:hover {
     opacity:1;
 }
 
-#content .gameOver {
+#content .gameInfo {
     position:relative;
     z-index:5;
     padding-top:30px;
+    transform:translateY(47px);
+    color:white;
 }
 
-#content .score {
+#content .infoBlock {
     width:100px;
     font-size:54px;
-}
-
-.victory:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    display: block;
-    width: 100%;
-    z-index: 5;
-    background: url('../images/victory.jpg') no-repeat center;
-    background-size:cover;
 }
 
 #content .gameZone {
@@ -109,7 +113,6 @@ header .navLogo {
     width: 60px;
     height: 90px;
     bottom:0;
-    left:41%;
 }
 
 #content .gameZone .active img{
@@ -145,8 +148,6 @@ header .navLogo {
 }
 
 #content .tankPark {
-    border:10px solid;
-    border-image: url('../images/tankPark.jpg') 30;
     background-size: cover;
     height: 122px;
 }

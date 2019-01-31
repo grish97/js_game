@@ -4,24 +4,48 @@ class Game
         this.options = {
             level_1 : {
                 id : 1,
-                bullets : 13,
+                bullets : 20,
                 level_time : 6000,
                 speed    : 5,
                 bulletsSpeed : 6,
                 targetSpeed : 60,
-                score : 24
+                point : 2,
+                victoryScore : 2
             },
             level_2 : {
-                id : 1,
-                bullets : 30,
+                id : 2,
+                bullets : 26,
                 level_time : 6000,
                 speed    : 15,
-                bulletsSpeed : 15,
-                targetSpeed : 30,
-                score : 60
+                bulletsSpeed : 4,
+                targetSpeed : 20,
+                point : 3,
+                victoryScore : 3
+            },
+            level_3 : {
+                id : 3,
+                bullets : 22,
+                level_time : 6000,
+                speed    : 5,
+                bulletsSpeed : 4,
+                targetSpeed : 18,
+                point : 5,
+                victoryScore : 100
+            },
+            level_4 : {
+                id : 4,
+                bullets : 32,
+                level_time : 6000,
+                speed    : 5,
+                bulletsSpeed : 4,
+                targetSpeed : 15,
+                point : 7,
+                victoryScore : 214
             },
         };
+        this.levelId = 1;
         this.localScore = 0;
+        this.bulletCount = null;
         this.addTarget = null;
         this.targetIntervals = {};
         this.bulletIntervals = {};
@@ -30,42 +54,49 @@ class Game
     }
 
     play (option) {
+        this.bulletCount = option.bullets;
         this.tankPark();
-        this.targets(option.targetSpeed,option.score);
-        this.getTank(option);
+        // this.targets(option.targetSpeed,option.victoryScore,option.point);
+        Game.getTank(option);
     }
 
     tankPark () {
         let block =  $(`.tank`);
         for (let i = 0; i < block.length; i++) {
-            block.eq(i).attr(`data-id`,(i+1));
+            block.eq(i).attr(`data-id`,(i+1)).attr(`draggable`,`false`);
         }
-        $(`.gameZone`).before(`<div class="scoreBlock text-center font-weight-bold"><p class="text-muted">Score</p><p class="score">${this.localScore}</p></div>`);
+        $(`.gameZone`).before(`<div class="scoreBlock text-center font-weight-bold">
+                                    <p class="text-muted">Score</p> 
+                                    <p class="score infoBlock">${this.localScore}</p>
+                                    <p class="text-muted">Count Bullets</p>
+                                    <p class="countBull infoBlock">${this.bulletCount}</p> 
+                               </div>`);
     }
 
-    moveTarget(elem,score) {
+    moveTarget(elem,score,point) {
         let top = elem.position().top;
-        this.meetingModels({target: elem, score: score});
+        this.meetingModels({target: elem, score: score,point : point});
         elem.css('top',(top+1)+'px');
     }
 
-    targets (speed,score) {
+    targets (speed,score,point) {
         let intervalId = 0,
             gameZone = $(`.gameZone`),
-            time = Math.ceil(Math.random() * 6000);
+            time = 3000;
 
         this.addTarget = setInterval(()=> {
             let imgTarget = $(`<img src="images/targets/${Math.ceil(Math.random() * 5)}.png" alt="Target" class="_target" data-intervalId="${intervalId}">`);
             gameZone.prepend(imgTarget);
             imgTarget.css(`left`,`${Math.round(Math.random() * 95)}%`);
             this.targetIntervals['interval-' + intervalId] = setInterval(() => {
-                this.moveTarget(imgTarget,score);
+                this.moveTarget(imgTarget,score,point);
             },speed);
             intervalId++;
+            time = Math.ceil(Math.random() * 2500);
         },time);
     }
 
-    getTank (option) {
+    static getTank (option) {
         let tankId = option.id;
         let block = $(`.tank[data-id='${tankId}']`);
         let activeTank = block.clone();
@@ -74,13 +105,18 @@ class Game
         block.remove();
         let bullets = option.bullets;
 
-        for (let i = 1; i < bullets; i++) {
+        for (let i = 0; i < bullets; i++) {
             let bullet = `<img src="images/bullets/bullet.png" class="bullet" alt="bullet" data-img="${i}">`;
             $(`.arsenal`).append(bullet);
         }
     }
 
-    shoot () {
+    shoot (e) {
+        if(this.bulletCount === 0) {
+            e.preventDefault();
+            this.gameOver();
+        }
+        $(`.countBull`).text(this.bulletCount-=1);
         let bullet = $(`.bullet`);
         let tank   = $(`.active`);
         let tankPos = tank.position().left;
@@ -89,11 +125,11 @@ class Game
         activeBullet.attr(`src`,`images/bullets/activeBullet.png`);
         $(`.gameZone`).append(activeBullet);
         lastBullet.remove();
-        let activeBulletId = activeBullet.attr(`data-img`);
+        // let activeBulletId = activeBullet.attr(`data-img`);
         activeBullet.css(`left`,`${tankPos + 27}px`);
         activeBullet.addClass(`activeBull`).removeClass(`bullet`);
         activeBullet.attr(`data-img`,`${this.interval}`);
-        let positionBullet = 0;
+        // let positionBullet = 0;
 
         if (bullet && bullet.length) {
             this.bulletIntervals['interval-' + this.interval] = setInterval(() => {
@@ -101,47 +137,60 @@ class Game
                 activeBullet.css(`top`, `${top - 1}px`);
                 this.meetingModels({bullet : activeBullet});
             },5);
-        }else if(bullet.length ===0) {
-            this.gameOver();
         }
-        console.log(this.bulletIntervals);
     }
 
-    move (keyCode) {
-        let activeTank  = $(`.active`);
-        let activeTankPosLeft = activeTank.offset().left;
-        let speed = this.options.level_1.speed;
-        if(keyCode === 37) {
-            if (this.position > (-270)) {
-                this.position  -= speed;
-                activeTank.css(`transform`,`translateX(${this.position}px`);
-
+    move (params) {
+        let {keyCode,mousePos} = params,
+            zone = $(`.gameZone`),
+            zoneWidth = zone.width(),
+            zonePosLeft = Math.round(zone.offset().left),
+            activeTank  = $(`.active`),
+            tankWidth = activeTank.width(),
+            tankPos = activeTank.offset(),
+            tankPosLeft = Math.round(tankPos.left),
+            speed  = this.options[`level_${this.levelId}`].speed;
+        // console.log(tankPosLeft >= zonePosLeft  && (tankPosLeft + tankWidth) <= (zonePosLeft + zoneWidth));
+        if (keyCode) {
+            if(keyCode === 37) {
+                if (tankPosLeft >= zonePosLeft) {
+                    this.position  -= speed;
+                    activeTank.css(`left`,`${this.position}px`);
+                }
+            }else if(keyCode === 39) {
+                if ((tankPosLeft + tankWidth) <= (zonePosLeft + zoneWidth)) {
+                    this.position  += speed;
+                    activeTank.css(`left`,`${this.position}px`);
+                }
             }
-        }else if(keyCode === 39) {
-            if (this.position < 330) {
-                this.position  += speed;
-                activeTank.css(`transform`,`translateX(${this.position}px`);
+        }
+        else if(mousePos) {
+            // mousePos = mousePos -   (tankPosLeft - (tankWidth/2));
+            if (zonePosLeft <= tankPosLeft) {
+                console.log(mousePos);
+                activeTank.css(`left`, `${mousePos -(tankPosLeft)}px`);
+
+            }else if (tankPosLeft <= (zonePosLeft + zoneWidth)) {
+            activeTank.css(`left`, `${mousePos - (tankPosLeft)}px`);
+                console.log(mousePos);
             }
         }
     }
 
     meetingModels (params) {
-        let {bullet,target, score} = params;
+        let {bullet,target, score,point} = params;
         let bullets = $(`.activeBull`);
             // GAME ZONE PARAMS
         let zone = $(`.gameZone`),
-            zoneWidth = zone.outerWidth(),
             zoneHeight = zone.height(),
-            zonePosTop = zone.offset().top,
-            zonePosLeft = zone.offset().left;
+            zonePosTop = zone.offset().top;
 
-        // TANK PARAMETRS
+        // TANK PARAMETERS
         let tank = $(`.active`),
             tankWidth = tank.width(),
             tankHeight = tank.height(),
             tankPos = tank.position(),
-            tankPosLeft = Math.round(tankPos.left),
-            tankPosTop = tankPos.top;
+            tankPosLeft = Math.round(tankPos.left);
 
 
         if (bullet && !target) {
@@ -151,7 +200,7 @@ class Game
                 bulletPosTop = bulletPos.top;
 
             if (bulletPosTop===(zonePosTop - (tankHeight + bulletHeight))) {
-                clearInterval(this.bulletIntervals['interval-' + bulletIntervalId]);
+                this._clearInterval({bulletTimer : this.bulletIntervals['interval-' + bulletIntervalId]});
                 bullet.remove();
             }
         }else if(target && !bullet) {
@@ -162,69 +211,60 @@ class Game
                 targetPosTop = targetPos.top,
                 targetPosLeft = Math.round(targetPos.left);
 
-                if ((targetPosTop +targetHeight) === zoneHeight) {
-                    clearInterval(this.targetIntervals['interval-' + targetIntervalId]);
+                if ((targetPosTop + targetHeight) === zoneHeight) {
+                    this._clearInterval({targetTimer : this.targetIntervals['interval-' + targetIntervalId]});
                     target.remove();
+                    this.gameOver();
                 }else if((zoneHeight - (tankHeight + targetHeight) <= targetPosTop) && ((tankPosLeft <= (targetPosLeft + targetWidth) )  && (targetPosLeft < (tankPosLeft + tankWidth)))) {
-                   clearInterval(this.targetIntervals['interval-' + targetIntervalId]);
+                    this._clearInterval({targetTimer : this.targetIntervals['interval-' + targetIntervalId]});
                     this.gameOver();
                 }else if (bullets && target) {
                     for (let i = 0; i < bullets.length; i++) {
                         let _bullet = bullets.eq(i),
                             _bulletIntervalId = bullets.eq(i).attr(`data-img`),
                             bulletWidth = bullets.eq(i).width(),
-                            bulletHeight = bullets.eq(i).height(),
+                            // bulletHeight = bullets.eq(i).height(),
                             bulletPos = bullets.eq(i).position(),
                             bulletPosTop = bulletPos.top,
                             bulletPosLeft = bulletPos.left;
                         if ((targetPosLeft < (bulletPosLeft + bulletWidth) && bulletPosLeft < (targetPosLeft + targetWidth)) && (targetPosTop + targetWidth) >= bulletPosTop) {
-                            clearInterval(this.targetIntervals['interval-' + targetIntervalId]);
-                            clearInterval(this.bulletIntervals['interval-'+_bulletIntervalId]);
-                            console.log(this.bulletIntervals['interval-'+_bulletIntervalId]);
+                            this._clearInterval({targetTimer : this.targetIntervals['interval-' + targetIntervalId]});
+                            this._clearInterval({bulletTimer : this.bulletIntervals['interval-'+_bulletIntervalId]});
                             target.remove();
                             _bullet.remove();
-                            score = $(`.score`).text(this.localScore +=2);
+                            $(`.score`).text(this.localScore += point);
                         }
                     }
+
+                    if (score === this.localScore) {
+                        let content = $(`#content`),
+                            vicBlock = `<div class="gameInfo text-center pb-5">
+                                            <h2>VICTORY LEVEL ${game.levelId++}</h2>
+                                            <p class="">YOUR SCORE ${this.localScore}</p>
+                                            <button type="submit" class="play nextLevel">level ${game.levelId}</button>
+                                        </div>`;
+                        content.prepend(vicBlock);
+                        content.addClass(`victory`);
+                        this.emptyData();
+                    }
                 }
-        }
-        console.log(score);
-        if (this.localScore === score) {
-            let content = $(`#content`),
-                vicBlock = `<div class="gameOver text-center pb-5">
-                                <h3>VICTORY LEVEL 1</h3>
-                                <p class="text-muted">YOUR SCORE: ${this.localScore}</p>
-                                <button type="submit" class=" btn btn-danger nextLevel">level 2</button>
-                            </div>`;
-            content.append(vicBlock);
-            content.addClass(`victory`);
-            for (let i = 0; i < this.targetIntervals.length;i++) {
-                clearInterval(this.targetIntervals[i]);
-            }
-            this.emptyData();
         }
     }
 
     gameOver () {
         let content = $(`#content`),
-            gameOverBlock = `<div class="gameOver text-center pb-5">
-                                <p class="text-muted">YOUR SCORE: ${this.localScore}</p>
-                                <button type="submit" class=" btn btn-danger playAgain">Play Again</button>
+            gameOverBlock = `<div class="gameInfo text-center pb-5">
+                                <p class="text-muted">YOUR SCORE ${this.localScore}</p>
+                                <button type="submit" class="play playAgain">Play Again</button>
                             </div>`;
             content.addClass(`end`);
-            content.append(gameOverBlock);
-            this.emptyData();
+            content.prepend(gameOverBlock);
+        this.emptyData();
     }
 
     emptyData () {
-        $.each(this.targetIntervals, (key,value) => {
-            clearInterval(value);
-        });
-
-        $.each(this.bulletIntervals , (key,value) => {
-            clearInterval(value);
-        });
-        this.score = 0;
+        this._clearInterval({allTimer : true});
+        this.victoryScore = 0;
         this.localScore = 0;
         this.addTarget = null;
         this.targetIntervals = {};
@@ -232,37 +272,79 @@ class Game
         this.position = 0;
         $(`.arsenal`).empty();
         $(`._target`).remove();
+        $(`.activeBull`).remove();
         $(`.scoreBlock`).remove();
         $(`.active`).css(`transform`,`translateY(0)`)
     }
+
+    _clearInterval (params) {
+        let {bulletTimer,targetTimer,allTimer} = params;
+
+        if(bulletTimer) {
+            clearInterval(bulletTimer)
+        }else if (targetTimer) {
+            clearInterval(targetTimer)
+        }else if(allTimer) {
+            clearInterval(this.addTarget);
+            $.each(this.targetIntervals, (key,value) => {
+                clearInterval(value);
+            });
+            $.each(this.bulletIntervals,(key,value) => {
+               clearInterval(value);
+            });
+        }
+    }
 }
-
+// EXAMPLE CLASS
 let game = new Game();
-
+let gameZone = $(`.gameZone`);
+// PLAY EVENT
 $(`.play`).click((event) =>{
     $(`#content`).removeClass(`start`);
-    game.play(game.options.level_1);
+    game.play(game.options[`level_${game.levelId}`]);
     $(event.target).remove();
 });
-
+// SHOOT EVENT
 $(document).on(`keydown`, (e) => {
     let key = e.which;
     if (key === 32) {
-        game.shoot();
+        game.shoot(e);
         game.interval++;
     }
-    else if ((key === 37) || (key === 39)) game.move(key);
+    else if ((key === 37) || (key === 39)) game.move({keyCode : key});
 });
 
+// SHOOT CLICK MOUSE
+gameZone.on(`click`, (e) => {
+    let key = e.which;
+    if (key === 32 || key === 1) {
+        game.shoot(e);
+        game.interval++;
+    }
+    else if ((key === 37) || (key === 39)) game.move({keyCode : key});
+});
+//MOVE EVENT MOUSE
+gameZone.on(`mousemove`, (e) => {
+    game.move({mousePos : e.pageX});
+});
+// EVENT PLAY AGAIN
 $(document).on(`click`,`.playAgain`, () => {
     $(`#content`).removeClass(`end`);
+    $(`.gameInfo`).remove();
     $(`.gameOver`).remove();
+    $(`.active`).remove();
     game.play(game.options.level_1);
 });
-
+// EVENT NEXT LEVEL
 $(document).on(`click`,`.nextLevel`, () => {
     $(`#content`).removeClass(`victory`);
+    $(`.gameInfo`).remove();
     $(`.gameOver`).remove();
-    game.play(game.options.level_2);
+    $(`.active`).remove();
+    game.play(game.options[`level_${game.levelId}`]);
     $(event.target).remove();
+});
+// CLEAR ALL INTERVALS
+window.addEventListener('beforeunload', function () {
+    game.emptyData();
 });
