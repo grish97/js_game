@@ -95,6 +95,7 @@ header .navLogo {
     padding:0;
     background:url('../images/rock.jpg') no-repeat center;
     background-size: cover;
+    cursor:none;
 }
 
 #content .gameZone:after {
